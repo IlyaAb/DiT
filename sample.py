@@ -44,7 +44,8 @@ def main(args):
     vae = AutoencoderKL.from_pretrained(f"stabilityai/sd-vae-ft-{args.vae}").to(device)
 
     # Labels to condition the model with (feel free to change):
-    class_labels = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    class_labels = args.list_classes
+    class_labels = [int(i) for i in class_labels.split(',')]
 
     # Create sampling noise:
     n = len(class_labels)
@@ -53,7 +54,7 @@ def main(args):
 
     # Setup classifier-free guidance:
     z = torch.cat([z, z], 0)
-    y_null = torch.tensor([1] * n, device=device)
+    y_null = torch.tensor([args.num_classes] * n, device=device)
     y = torch.cat([y, y_null], 0)
     model_kwargs = dict(y=y, cfg_scale=args.cfg_scale)
 
@@ -69,7 +70,8 @@ def main(args):
     now = datetime.datetime.now()
     now = str(now).split(' ')[1].split('.')[0].replace(':', '')
     mod = str(args.ckpt).split("_")[-1:]
-    save_image(samples, f"E://Programming//diffusion_transformer//sample_{now}_nss{args.num_sampling_steps}_seed{args.seed}_cs{args.cfg_scale}_m{mod}.png")
+    # save_image(samples, f"E://Programming//diffusion_transformer//sample_{now}_nss{args.num_sampling_steps}_seed{args.seed}_cs{args.cfg_scale}_m{mod}.png")
+    save_image(samples, f"{args.save_result_path}_{now}_nss{args.num_sampling_steps}_seed{args.seed}_cs{args.cfg_scale}.png")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -81,6 +83,25 @@ if __name__ == "__main__":
     parser.add_argument("--num-sampling-steps", type=int, default=250)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--ckpt", type=str, default=None,
-                        help="Optional path to a DiT checkpoint (default: auto-download a pre-trained DiT-XL/2 model).")
+                        help="Optional path to a DiT checkpoint (default: auto-download a pre-trained DiT-XL/2 model)."),
+    parser.add_argument("--list-classes", type=str, default=None),
+    parser.add_argument("--save-result-path", type=str, default=None)
+                       
     args = parser.parse_args()
     main(args)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
